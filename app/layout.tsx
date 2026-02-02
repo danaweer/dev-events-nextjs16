@@ -3,6 +3,7 @@ import "./globals.css";
 import LightRays from "@/components/LightRays";
 import Navbar from "@/components/Navbar";
 import PostHogProvider from "@/app/providers/PostHogProvider";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "DevEvent",
@@ -17,26 +18,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
-        <PostHogProvider>
-          <Navbar />
+        <Suspense fallback={null}>
+          <PostHogProvider>
+            <Navbar />
 
-          <div className="absolute inset-0 top-0 z-[-1] min-h-screen">
-            <LightRays
-              raysOrigin="top-center"
-              raysColor="#00ffff"
-              raysSpeed={1.5}
-              lightSpread={0.8}
-              rayLength={1.2}
-              followMouse={true}
-              mouseInfluence={0.02}
-              noiseAmount={0.0}
-              distortion={0.01}
-              className="custom-rays"
-            />
-          </div>
+            <div className="absolute inset-0 top-0 z-[-1] min-h-screen">
+              <LightRays
+                raysOrigin="top-center"
+                raysColor="#00ffff"
+                raysSpeed={1.5}
+                lightSpread={0.8}
+                rayLength={1.2}
+                followMouse={true}
+                mouseInfluence={0.02}
+                noiseAmount={0.0}
+                distortion={0.01}
+                className="custom-rays"
+              />
+            </div>
 
-          <main>{children}</main>
-        </PostHogProvider>
+            <main>{children}</main>
+          </PostHogProvider>
+        </Suspense>
       </body>
     </html>
   );

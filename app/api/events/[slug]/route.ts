@@ -8,12 +8,16 @@ type RouteParams = {
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export async function GET(req: NextRequest, { params }: { params: RouteParams }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<RouteParams> }
+) {
   try {
-    const slugFromParams = params.slug?.trim();
+    const { slug: slugFromParams } = await params;
+    const normalizedSlug = slugFromParams?.trim();
     const pathSegments = req.nextUrl.pathname.split("/").filter(Boolean);
     const slugFromPath = pathSegments[pathSegments.length - 1];
-    const slug = slugFromParams ?? slugFromPath;
+    const slug = normalizedSlug ?? slugFromPath;
 
     if (!slug) {
       return NextResponse.json({ message: "Slug is required." }, { status: 400 });
@@ -41,4 +45,3 @@ export async function GET(req: NextRequest, { params }: { params: RouteParams })
     );
   }
 } //handle GET request for event details by slug
-

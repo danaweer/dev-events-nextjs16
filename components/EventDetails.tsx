@@ -1,12 +1,10 @@
-import { notFound } from 'next/navigation';
-import React from 'react'
-import BookEvent from '@/components/BookEvent';
-import { IEvent } from '@/lib/types';
-import { getSimilarEventsBySlug } from '@/lib/actions/event.actions';
-import EventCard from '@/components/EventCard';
-import { cacheLife } from 'next/cache';
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3001";
+import { notFound } from "next/navigation";
+import React from "react";
+import BookEvent from "@/components/BookEvent";
+import { IEvent } from "@/lib/types";
+import { getEventBySlug, getSimilarEventsBySlug } from "@/lib/actions/event.actions";
+import EventCard from "@/components/EventCard";
+import { cacheLife, cacheTag } from "next/cache";
 
 //reusabe component and function definitions
 const formatDate = (value: string) => {
@@ -46,18 +44,12 @@ const EventTags = ({ tags }: { tags: string[] }) => (
 );
 
 const EventDetails = async ({ slug }: { slug: string }) => {
-    
-    'use cache';
-    cacheLife('hours'); //cache the page for 60 seconds
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`event:${slug}`);
 
-  const request = await fetch(`${BASE_URL}/api/events/${slug}`); //fetch event details from API route
-  
-    if (!request.ok) {
-      return notFound();
-    }
-  
-    const data = (await request.json()) as {
-      event?: {
+  const event = (await getEventBySlug(slug)) as
+    | {
         _id?: string;
         slug?: string;
         description: string;
@@ -71,12 +63,11 @@ const EventDetails = async ({ slug }: { slug: string }) => {
         audience: string;
         tags: string[] | string;
         organizer: string;
-      };
-    }; //type definition for event data
+      }
+    | null;
+
+    if (!event?.description) return notFound();
   
-    if (!data.event?.description) return notFound();
-  
-    const event = data.event;
     const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } =
       event; //extract event data from response
   
