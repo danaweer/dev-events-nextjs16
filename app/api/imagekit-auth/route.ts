@@ -1,4 +1,4 @@
-import ImageKit from "imagekit";
+import ImageKit from "@imagekit/nodejs";
 import { NextResponse } from "next/server";
 
 const imagekit = new ImageKit({
