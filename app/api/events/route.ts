@@ -2,7 +2,7 @@ import connectToDatabase from "@/lib/mongodb";
 import { Event } from "@/database/event.model";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import ImageKit from "imagekit";
+import ImageKit from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
