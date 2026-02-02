@@ -12,9 +12,10 @@ export default function PostHogProvider({
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       capture_pageview: true,
+      debug: process.env.NODE_ENV === "development",
     });
 
-    // 🔥 FORCE expose for debugging
+    //FORCE expose for debugging
     (window as any).posthog = posthog;
 
     console.log("PostHog initialized", posthog);

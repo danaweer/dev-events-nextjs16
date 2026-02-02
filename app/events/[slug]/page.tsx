@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
 import React from 'react'
 import BookEvent from '@/components/BookEvent';
 import { IEvent } from '@/lib/types';
 import { getSimilarEventsBySlug } from '@/lib/actions/event.actions';
 import EventCard from '@/components/EventCard';
+import { cacheLife } from 'next/cache';
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3001";
 
 //reusabe component and function definitions
 const formatDate = (value: string) => {
@@ -44,15 +46,12 @@ const EventTags = ({ tags }: { tags: string[] }) => (
 )
 
 const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
-
+  'use cache';
+  cacheLife('hours'); //cache the page for 60 seconds
+  
   const { slug } = await params; //get slug from route parameters
 
-  const requestHeaders = await headers();
-  const proto = requestHeaders.get('x-forwarded-proto') ?? 'http';
-  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
-  const baseUrl = host ? `${proto}://${host}` : '';//construct base URL for API request 
-
-  const request = await fetch(baseUrl ? `${baseUrl}/api/events/${slug}` : `/api/events/${slug}`); //fetch event details from API route
+  const request = await fetch(`${BASE_URL}/api/events/${slug}`); //fetch event details from API route
 
   if (!request.ok) {
     return notFound();
@@ -60,6 +59,8 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> 
 
   const data = (await request.json()) as {
     event?: {
+      _id?: string;
+      slug?: string;
       description: string;
       image: string;
       overview: string;
@@ -76,8 +77,9 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> 
 
   if (!data.event?.description) return notFound();
 
+  const event = data.event;
   const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } =
-    data.event; //extract event data from response
+    event; //extract event data from response
 
   if (!description) return notFound();
 
@@ -161,7 +163,9 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> 
             ):(
               <p className='text-sm'>Be the first to book your spot!</p>
             )} 
-            <BookEvent /> 
+
+            <BookEvent eventId={event._id ?? ""} slug={event.slug ?? slug} /> {/*booking form component */}
+
           </div>
         </aside>
       </div>
